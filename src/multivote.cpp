@@ -644,25 +644,21 @@ bool NETEnumTSet_uint8(MessageReader& r, std::set<T>& val, std::function<bool(ui
 	if (numElements > MaxSupportedSetMembers)
 	{
 		debug(LOG_NET, "Invalid number of set members: %" PRIu32, numElements);
-		// will skip extras in the loop, set return value to false
-		retVal = false;
+		return false;
 	}
 	for (uint32_t i = 0; i < numElements; ++i)
 	{
 		uint8_t el = 0;
 		NETuint8_t(r, el);
-		if (i < numElements)
+		if (validateValueFunc)
 		{
-			if (validateValueFunc)
+			if (!validateValueFunc(el))
 			{
-				if (!validateValueFunc(el))
-				{
-					retVal = false;
-					continue;
-				}
+				retVal = false;
+				continue;
 			}
-			val.insert(static_cast<T>(el));
 		}
+		val.insert(static_cast<T>(el));
 	}
 	return retVal;
 }
